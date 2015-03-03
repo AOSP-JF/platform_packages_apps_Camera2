@@ -74,6 +74,7 @@ import com.android.camera.app.CameraAppUI;
 import com.android.camera.app.CameraController;
 import com.android.camera.app.CameraProvider;
 import com.android.camera.app.CameraServices;
+import com.android.camera.app.DevicePluginImpl;
 import com.android.camera.app.LocationManager;
 import com.android.camera.app.MemoryManager;
 import com.android.camera.app.MemoryQuery;
@@ -210,6 +211,7 @@ public class CameraActivity extends QuickActivity
     private int mCurrentModeIndex;
     private CameraModule mCurrentModule;
     private ModuleManagerImpl mModuleManager;
+    private DevicePluginImpl mDevicePlugin;
     private FrameLayout mAboveFilmstripControlLayout;
     private FilmstripController mFilmstripController;
     private boolean mFilmstripVisible;
@@ -521,6 +523,7 @@ public class CameraActivity extends QuickActivity
         }
         Log.v(TAG, "invoking onChangeCamera");
         mCameraAppUI.onChangeCamera();
+        mDevicePlugin.onCameraOpened(camera);
     }
 
     private void resetExposureCompensationToDefault(CameraAgent.CameraProxy camera) {
@@ -1392,6 +1395,9 @@ public class CameraActivity extends QuickActivity
         GcamHelper.init(getContentResolver());
         ModulesInfo.setupModules(mAppContext, mModuleManager);
 
+        mDevicePlugin = new DevicePluginImpl();
+        mDevicePlugin.onCreate(mAppContext);
+
         mSettingsManager = getServices().getSettingsManager();
         AppUpgrader appUpgrader = new AppUpgrader(this);
         appUpgrader.upgrade(mSettingsManager);
@@ -1922,6 +1928,7 @@ public class CameraActivity extends QuickActivity
         getContentResolver().unregisterContentObserver(mLocalVideosObserver);
         getServices().getCaptureSessionManager().removeSessionListener(mSessionListener);
         mCameraAppUI.onDestroy();
+        mDevicePlugin.onDestroy();
         mModeListView.setVisibilityChangedListener(null);
         mCameraController = null;
         mSettingsManager = null;
